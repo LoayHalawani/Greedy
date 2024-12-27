@@ -21,51 +21,66 @@ public class Graph {
 		}
 	}
 
-	private List<List<Edge>> adj;
+	private List<Edge>[] adj;
 	private List<Edge> mst;
-	private PriorityQueue<Edge> queue;
-	private List<Integer> visited;
+	private PriorityQueue<Edge> pq;
+	private boolean[] visited;
 	private int[] parent;
 	private int[] distances;
 
-	public Graph() {
-		adj = new ArrayList<>();
+	@SuppressWarnings("unchecked")
+	public Graph(int V) {
+		adj = new ArrayList[V];
+		for(int i = 0; i < adj.length; i ++) {
+			adj[i] = new ArrayList<>();
+		}
+	}
+
+	private void initializeVisited() {
+		visited = new boolean[adj.length];
+		for(int i = 0; i < visited.length; i ++) {
+			visited[i] = false;
+		}
 	}
 
 	// Weighted undirected graph
 	private void addWeightedEdge(char n1, char n2, int w) {
 		int u = n1 - 'a';
 		int v = n2 - 'a';
-
-		while (adj.size() <= Math.max(u, v)) {
-        	adj.add(new ArrayList<>());
-    	}
 		
-		adj.get(u).add(new Edge(u, v, w));
-		adj.get(v).add(new Edge(v, u, w));
+		adj[u].add(new Edge(u, v, w));
+		adj[v].add(new Edge(v, u, w));
+	}
+
+	// Display minimum spanning tree
+	private void printMST() {
+		for(Edge e : mst) {
+			System.out.println(e);
+		}
 	}
 
 	// Prim's
 	private void prim() {
-		queue = new PriorityQueue<>(Comparator.comparingInt(e -> e.w));
+		initializeVisited();
+		pq = new PriorityQueue<>(Comparator.comparingInt(e -> e.w));
+		mst = new ArrayList<>(adj.length - 1);
 
-		visited = new ArrayList<>();
-		mst = new ArrayList<>();
+		visited[0] = true;
 
-		visited.add(0);
-
-		for(Edge e : adj.get(0)) {
-			queue.add(e);
+		for(Edge e : adj[0]) {
+			pq.add(e);
 		}
 
-		while(!queue.isEmpty()) {
-			Edge e1 = queue.poll();
-			if(!visited.contains(e1.v)) {
-				mst.add(e1);
-				visited.add(e1.v);
-				for(Edge e2 : adj.get(e1.v)) {
-					if(!visited.contains(e2.v)) {
-						queue.add(e2);
+		while(!pq.isEmpty()) {
+			Edge curr = pq.poll();
+			int u = curr.v;
+			if(!visited[u]) {
+				mst.add(curr);
+				visited[u] = true;
+				for(Edge e : adj[u]) {
+					int v = e.v;
+					if(!visited[v]) {
+						pq.add(e);
 					}
 				}
 			}
@@ -77,7 +92,7 @@ public class Graph {
 	// Kruskal's
 	private void kruskal() {
 		List<Edge> edges = new ArrayList<>();
-		mst = new ArrayList<>();
+		mst = new ArrayList<>(adj.length - 1);
 
 		for(List<Edge> e : adj) {
 			edges.addAll(e);
@@ -102,7 +117,7 @@ public class Graph {
 
 	// MAKE-SET()
 	private void makeSet() {
-		parent = new int[adj.size()];
+		parent = new int[adj.length];
 		for(int x = 0; x < parent.length; x ++) {
 			parent[x] = x;
 		}
@@ -121,34 +136,30 @@ public class Graph {
 		int rootX = findSet(x);
 		int rootY = findSet(y);
 		if(rootX != rootY) {
-			parent[rootX] = rootY;
-		}
-	}
-
-	// Display minimum spanning tree
-	private void printMST() {
-		for(Edge e : mst) {
-			System.out.println(e);
+			parent[rootY] = rootX;
 		}
 	}
 
 	// Djikstra's
 	private void djikstra(char n) {
-		int u = n - 'a';
-		initialize(u);
-		visited = new ArrayList<>();
-		queue = new PriorityQueue<>(Comparator.comparingInt(e -> distances[e.v]));
+		int s = n - 'a';
+		initialize(s);
+		initializeVisited();
+		pq = new PriorityQueue<>(Comparator.comparingInt(e -> distances[e.v]));
 
-	    queue.add(new Edge(u, u, 0));
+	    pq.add(new Edge(s, s, 0));
 
-	    while (!queue.isEmpty()) {
-	        Edge e1 = queue.poll();
-	        if (!visited.contains(e1.v)) {
-		        visited.add(e1.v);
-		        for (Edge e2 : adj.get(e1.v)) {
-		            if (!visited.contains(e2.v) && distances[e1.v] != Integer.MAX_VALUE) {
-		            	relax(e1.v, e2.v, e2.w);
-		                queue.add(new Edge(e1.v, e2.v, distances[e2.v]));
+	    while (!pq.isEmpty()) {
+	        Edge curr = pq.poll();
+	        int u = curr.v;
+	        if (!visited[u]) {
+		        visited[u] = true;
+		        for (Edge e : adj[u]) {
+		        	int v = e.v;
+		        	int w = e.w;
+		            if (!visited[v] && distances[u] != Integer.MAX_VALUE) {
+		            	relax(u, v, w);
+		                pq.add(new Edge(u, v, distances[v]));
 		            }
 		        }
 		    }
@@ -159,7 +170,7 @@ public class Graph {
 
 	// INITIALIZE(s)
 	private void initialize(int u) {
-		distances = new int[adj.size()];
+		distances = new int[adj.length];
 		Arrays.fill(distances, Integer.MAX_VALUE);
 		distances[u] = 0;
 	}
@@ -180,7 +191,7 @@ public class Graph {
 	}	
 	
 	public static void main(String[] args) {
-		Graph graph = new Graph();
+		Graph graph = new Graph(7);
 
 		graph.addWeightedEdge('a', 'b', 15);
 		graph.addWeightedEdge('a', 'f', 10);
