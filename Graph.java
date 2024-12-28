@@ -43,7 +43,6 @@ public class Graph {
 		}
 	}
 
-	// Weighted undirected graph
 	private void addWeightedEdge(char n1, char n2, int w) {
 		int u = n1 - 'a';
 		int v = n2 - 'a';
@@ -52,7 +51,6 @@ public class Graph {
 		adj[v].add(new Edge(v, u, w));
 	}
 
-	// Display minimum spanning tree
 	private void printMST() {
 		for(Edge e : mst) {
 			System.out.println(e);
@@ -66,17 +64,18 @@ public class Graph {
 		mst = new ArrayList<>(adj.length - 1);
 
 		visited[0] = true;
-
 		for(Edge e : adj[0]) {
 			pq.add(e);
 		}
 
 		while(!pq.isEmpty()) {
 			Edge curr = pq.poll();
+
 			int u = curr.v;
 			if(!visited[u]) {
 				mst.add(curr);
 				visited[u] = true;
+
 				for(Edge e : adj[u]) {
 					int v = e.v;
 					if(!visited[v]) {
@@ -91,13 +90,12 @@ public class Graph {
 
 	// Kruskal's
 	private void kruskal() {
-		List<Edge> edges = new ArrayList<>();
 		mst = new ArrayList<>(adj.length - 1);
 
+		List<Edge> edges = new ArrayList<>();
 		for(List<Edge> e : adj) {
 			edges.addAll(e);
 		}
-
 		edges.sort(Comparator.comparingInt(e -> e.w));
 
 		makeSet();
@@ -105,7 +103,6 @@ public class Graph {
 		for(Edge e : edges) {
 			int rootX = findSet(e.u);
 			int rootY = findSet(e.v);
-
 			if(rootX != rootY) {
 				mst.add(e);
 				union(e.u, e.v);
@@ -143,18 +140,22 @@ public class Graph {
 	// Djikstra's
 	private void djikstra(char n) {
 		int s = n - 'a';
-		initialize(s);
+
 		initializeVisited();
 		pq = new PriorityQueue<>(Comparator.comparingInt(e -> distances[e.v]));
 
+		initialize(s);
+
 	    pq.add(new Edge(s, s, 0));
 
-	    while (!pq.isEmpty()) {
+	    while(!pq.isEmpty()) {
 	        Edge curr = pq.poll();
+
 	        int u = curr.v;
-	        if (!visited[u]) {
+	        if(!visited[u]) {
 		        visited[u] = true;
-		        for (Edge e : adj[u]) {
+
+		        for(Edge e : adj[u]) {
 		        	int v = e.v;
 		        	int w = e.w;
 		            if (!visited[v] && distances[u] != Integer.MAX_VALUE) {
