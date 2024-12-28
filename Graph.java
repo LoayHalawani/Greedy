@@ -43,6 +43,7 @@ public class Graph {
 		}
 	}
 
+	// Undirected weighted graph
 	private void addWeightedEdge(char n1, char n2, int w) {
 		int u = n1 - 'a';
 		int v = n2 - 'a';
@@ -51,6 +52,7 @@ public class Graph {
 		adj[v].add(new Edge(v, u, w));
 	}
 
+	// Display minimum spanning tree
 	private void printMST() {
 		for(Edge e : mst) {
 			System.out.println(e);
